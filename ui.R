@@ -39,7 +39,14 @@ shinyUI(
           radioButtons('microbeQuote', 'Quote', c(None='', 'Double Quote'='"', 'Single Quote'="'"), '"')
         ),
         HTML('<br>'),
-       
+
+        selectInput("biodiversityNorm", "Biodiversity normalization", 
+                     list("None"="none",
+                          "Dirichlet" = "dirichlet",
+                          "Rarefaction" = "rarefaction"
+                     )
+        ),
+               
         selectInput("dataTransform", "Transform data:", 
                      list("None"="none",
                           "Relative abundance" = "total",
@@ -48,12 +55,7 @@ shinyUI(
                           "Centered Log Ratio"="clr0.5"
                      )
         ),
-        # selectInput("biodiversityNorm", "Biodiversity normalization", 
-        #              list("None"="none",
-        #                   "Dirichlet" = "dirichlet",
-        #                   "Rarefaction" = "rarefaction"
-        #              )
-        # ),
+
 
         checkboxInput("advancedOptions", "Show advanced options", value=FALSE),
         

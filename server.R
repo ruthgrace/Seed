@@ -26,6 +26,23 @@ shinyServer(function(input, output) {
     trim<-as.integer(n*0.1)+3   # prevents color overlap at ends of rainbow
     rainbow(n+trim)[1:n]
   }
+
+  #Dirichlet process that treats each count as a distribution
+  # based on technical variation from the sequencing process
+  # - an alternative to rarefaction for measuring biodiversity
+  #   despite having different numbers of reads per sample
+  rdirichlet <- function (n, alpha)
+  {
+    if(length(n) > 1) n <- length(n)
+    if(length(n) == 0 || as.integer(n) == 0) return(numeric(0))
+    n <- as.integer(n)
+    if(n < 0) stop("integer(n) can not be negative in rtriang")
+
+    if(is.vector(alpha)) alpha <- t(alpha)
+    l <- dim(alpha)[2]
+    x <- matrix(rgamma(l * n, t(alpha)), ncol = l, byrow=TRUE)  # Gere le recycling
+    return(x / rowSums(x))
+  }
   
   # generate color vector for plots. Returns both color vector and value vector 
   #(for use in legends).
@@ -140,12 +157,31 @@ shinyServer(function(input, output) {
   microbeData <- reactive({ 
 
        microbeData<-preMicrobeData()
+
+       #remove rows with all zero counts
+       microbeData <- microbeData[apply(microbeData, 1, sum) > 0,]
+          
+
+       if (input$biodiversityNorm=="dirichlet") {
+        microbeData.dirichlet <- microbeData
+        microbeData.dirichlet <- apply(microbeData.dirichlet, 2, function(x){rdirichlet(1,x)})
+        microbeData <- microbeData.dirichlet
+       }
+       else if (input$biodiversityNorm=="rarefaction") {
+        # rarefaction limit is the least number of reads in a sample
+        rarefactionLimit <- min(rowSums(t(microbeData)))
+        # remove all samples with less reads than rarefaction limit
+        microbeData.t <- t(microbeData)
+        rarefactionFilteredSamples <- microbeData.t[apply(microbeData.t,1,sum) >= rarefactionLimit,]
+        # perform rarefaction with vegan method
+        microbeData.rare <- data.frame(t(rrarefy(rarefactionFilteredSamples,rarefactionLimit)))
+        microbeData <- microbeData.rare
+       }
+
        if (input$dataTransform!="none"){
         if (input$dataTransform=="clr0.5") {
-          #remove rows with all zero counts
-          microbeData.noZeroRows <- microbeData[apply(microbeData, 1, sum) > 0,]
           # add 0.5 prior onto 0's
-          microbeData.withPrior <- microbeData.noZeroRows
+          microbeData.withPrior <- microbeData
           microbeData.withPrior[microbeData.withPrior == 0] <- 0.5
           #centered log ratio transform
           microbeData.clr <- apply(microbeData.withPrior, 2, function(x){log2(x) - mean(log2(x))})
@@ -155,13 +191,6 @@ shinyServer(function(input, output) {
          microbeData <- decostand(microbeData, method=input$dataTransform)
         }
        }
-
-       # if (input$biodiversityNorm=="dirichlet") {
-        
-       # }
-       # else if (input$biodiversityNorm=="rarefaction") {
-        
-       # }
        microbeData
   })
   
