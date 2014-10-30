@@ -40,13 +40,16 @@ shinyUI(
         ),
         HTML('<br>'),
 
+        sliderInput("sparsity", "Sparsity filter: minimum number of reads per OTU",
+        0, 100, 0, step = 10),
+
         selectInput("biodiversityNorm", "Biodiversity normalization", 
                      list("None"="none",
                           "Dirichlet" = "dirichlet",
                           "Rarefaction" = "rarefaction"
                      )
         ),
-               
+
         selectInput("dataTransform", "Transform data:", 
                      list("None"="none",
                           "Relative abundance" = "total",

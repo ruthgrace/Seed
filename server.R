@@ -158,8 +158,11 @@ shinyServer(function(input, output) {
 
        microbeData<-preMicrobeData()
 
-       #remove rows with all zero counts
-       microbeData <- microbeData[apply(microbeData, 1, sum) > 0,]
+       #remove rows with number of counts below sparsity filter
+       if (length(microbeData)!=0) {
+        microbeData <- microbeData[apply(microbeData, 1, sum) > input$sparsity,]
+       }
+       
           
 
        if (input$biodiversityNorm=="dirichlet") {
