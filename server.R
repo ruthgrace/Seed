@@ -141,9 +141,27 @@ shinyServer(function(input, output) {
 
        microbeData<-preMicrobeData()
        if (input$dataTransform!="none"){
+        if (input$dataTransform=="clr0.5") {
+          #remove rows with all zero counts
+          microbeData.noZeroRows <- microbeData[apply(microbeData, 1, sum) > 0,]
+          # add 0.5 prior onto 0's
+          microbeData.withPrior <- microbeData.noZeroRows
+          microbeData.withPrior[microbeData.withPrior == 0] <- 0.5
+          #centered log ratio transform
+          microbeData.clr <- apply(microbeData.withPrior, 2, function(x){log2(x) - mean(log2(x))})
+          microbeData <- microbeData.clr
+        }
+        else {
          microbeData <- decostand(microbeData, method=input$dataTransform)
+        }
        }
 
+       # if (input$biodiversityNorm=="dirichlet") {
+        
+       # }
+       # else if (input$biodiversityNorm=="rarefaction") {
+        
+       # }
        microbeData
   })
   

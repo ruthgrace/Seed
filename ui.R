@@ -44,9 +44,16 @@ shinyUI(
                      list("None"="none",
                           "Relative abundance" = "total",
                           "Presence/absence" = "pa",
-                          "Hellinger" = "hellinger"
+                          "Hellinger" = "hellinger",
+                          "Centered Log Ratio"="clr0.5"
                      )
         ),
+        # selectInput("biodiversityNorm", "Biodiversity normalization", 
+        #              list("None"="none",
+        #                   "Dirichlet" = "dirichlet",
+        #                   "Rarefaction" = "rarefaction"
+        #              )
+        # ),
 
         checkboxInput("advancedOptions", "Show advanced options", value=FALSE),
         
